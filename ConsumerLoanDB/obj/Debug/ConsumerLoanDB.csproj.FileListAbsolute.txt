@@ -1,0 +1,12 @@
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\ConsumerLoanDB.exe.config
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\ConsumerLoanDB.exe
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\ConsumerLoanDB.pdb
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\obj\Debug\ConsumerLoanDB.csprojResolveAssemblyReference.cache
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\obj\Debug\ConsumerLoanDB.csproj.CoreCompileInputs.cache
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\obj\Debug\ConsumerLoanDB.exe
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\obj\Debug\ConsumerLoanDB.pdb
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\EntityFramework.dll
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\EntityFramework.SqlServer.dll
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\EntityFramework.xml
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\EntityFramework.SqlServer.xml
+D:\Projects\ConsumerLoanDB\ConsumerLoanDB\bin\Debug\Oracle.ManagedDataAccess.dll
