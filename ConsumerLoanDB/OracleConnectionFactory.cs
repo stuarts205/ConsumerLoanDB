@@ -5,7 +5,7 @@ using System.Configuration;
 using System.Linq;
 using System.Web;
 
-namespace ConsumerLoan
+namespace ConsumerLoanDB
 {
     public class OracleConnectionFactory
     {
