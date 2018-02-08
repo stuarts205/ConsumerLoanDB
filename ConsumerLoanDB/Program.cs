@@ -139,6 +139,7 @@ namespace ConsumerLoanDB
 
                 loan.OnlineAccess = dr["ONLINE ACCESS"].ToString();
                 loan.NumberOfDeficiencies = 0;
+                loan.LoanStatus = dr["STATUS"].ToString();
 
                 _context.Loans.Add(loan);
             }

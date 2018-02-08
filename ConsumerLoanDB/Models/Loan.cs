@@ -137,5 +137,11 @@ namespace ConsumerLoan.Models
 
         public int? NumberOfDeficiencies { get; set; }
 
+        [StringLength(50)]
+        public string AppId { get; set; }
+
+        [StringLength(50)]
+        public string LoanStatus { get; set; }
+
     }
 }
