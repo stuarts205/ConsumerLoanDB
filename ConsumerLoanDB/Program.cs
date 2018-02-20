@@ -37,114 +37,125 @@ namespace ConsumerLoanDB
 
             DataTable dt = DBQuery.GetLoanInfoCore();
 
-
-            foreach (DataRow dr in dt.Rows)
+            try
             {
-                Loan loan = new Loan();
-
-                loan.Branch = dr["BRANCH"].ToString();
-
-                string cd = dr["CONTRACT DATE"].ToString();
-                if (cd != "")
+                foreach (DataRow dr in dt.Rows)
                 {
-                    loan.ContractDate = Convert.ToDateTime(cd);
+
+                    string status = dr["STATUS"].ToString();
+
+                    if(status == "ACTIVE")
+                    {
+                        Loan loan = new Loan();
+
+                        loan.Branch = dr["BRANCH"].ToString();
+
+                        string cd = dr["CONTRACT DATE"].ToString();
+                        if (cd != "")
+                        {
+                            loan.ContractDate = Convert.ToDateTime(cd);
+                        }
+
+                        string sd = dr["STATUSDATE"].ToString();
+                        if (sd != "")
+                        {
+                            loan.StatusDate = Convert.ToDateTime(sd);
+                        }
+
+                        loan.Originator = dr["ORIGINATOR"].ToString();
+                        loan.Witness = dr["WITNESS"].ToString();
+                        loan.FinalUW = dr["FINAL UW"].ToString();
+                        loan.Funder = dr["FUNDER"].ToString();
+                        loan.SLAppNumber = dr["SL APP#"].ToString();
+                        loan.AcctBr = dr["ACCTNBR"].ToString();
+                        loan.LastName = dr["LASTNAME"].ToString();
+                        loan.FirstName = dr["FIRSTNAME"].ToString();
+                        loan.Email = dr["EMAIL"].ToString();
+                        loan.Minor = dr["MINOR"].ToString();
+
+                        string year = dr["YEAR"].ToString();
+                        if (year != "")
+                        {
+                            Convert.ToInt32(year);
+                        }
+
+                        loan.Make = dr["MAKE"].ToString();
+                        loan.Model = dr["MODEL"].ToString();
+                        loan.Vin = dr["VIN"].ToString();
+
+                        string balLimit = dr["BAL/LIMIT"].ToString();
+                        if (balLimit != "")
+                        {
+                            loan.LoanAmountLimit = Convert.ToDecimal(balLimit);
+                        }
+
+                        string mt = dr["MO TERM"].ToString();
+                        if (mt != "")
+                        {
+                            loan.MonthTerm = Convert.ToInt32(mt);
+                        }
+
+                        string pmt = dr["PAYMENT"].ToString();
+                        if (pmt != "")
+                        {
+                            loan.Payment = Convert.ToDecimal(pmt);
+                        }
+
+                        loan.PaymentFreq = dr["PMTFREQ"].ToString();
+
+                        string rate = dr["RATE"].ToString();
+                        if (rate != "")
+                        {
+                            loan.Rate = Convert.ToDouble(rate);
+                        }
+
+                        loan.RBP = dr["RBP"].ToString();
+                        loan.CreditTier = dr["CREDIT TIER"].ToString();
+                        loan.DTI = dr["DTI"].ToString();
+                        loan.LTV = dr["LTV"].ToString();
+                        loan.InsCo = dr["INS CO"].ToString();
+                        loan.InsPolicy = dr["INS POLICY"].ToString();
+                        loan.InsPhone = dr["INS PHONE"].ToString();
+                        loan.DealerName = dr["DEALER NAME"].ToString();
+                        loan.Distribution = dr["DISTRIBUTION"].ToString();
+                        loan.CollateralHold = dr["COLLATERAL HOLD"].ToString();
+                        loan.PreAuth = dr["PRE AUTH"].ToString();
+                        loan.Dp = dr["DP"].ToString();
+                        loan.Gap = dr["GAP"].ToString();
+
+                        string gd = dr["GAP $"].ToString();
+                        if (gd != "")
+                        {
+                            loan.GapAmount = Convert.ToDecimal(gd);
+                        }
+
+                        loan.Mbpyn = dr["MBPYN"].ToString();
+
+                        string mbpAmount = dr["GAP $"].ToString();
+                        if (mbpAmount != "")
+                        {
+                            loan.MbpAmount = Convert.ToDecimal(mbpAmount);
+                        }
+
+                        string statementAcc = dr["GAP $"].ToString();
+                        if (statementAcc != "")
+                        {
+                            loan.StatementAcct = Convert.ToDecimal(statementAcc);
+                        }
+
+                        loan.OnlineAccess = dr["ONLINE ACCESS"].ToString();
+                        loan.NumberOfDeficiencies = 0;
+                        loan.LoanStatus = dr["STATUS"].ToString();
+
+                        _context.Loans.Add(loan);
+                    }
                 }
-
-                string sd = dr["STATUSDATE"].ToString();
-                if (sd != "")
-                {
-                    loan.StatusDate = Convert.ToDateTime(sd);
-                }
-
-                loan.Originator = dr["ORIGINATOR"].ToString();
-                loan.Witness = dr["WITNESS"].ToString();
-                loan.FinalUW = dr["FINAL UW"].ToString();
-                loan.Funder = dr["FUNDER"].ToString();
-                loan.SLAppNumber = dr["SL APP#"].ToString();
-                loan.AcctBr = dr["ACCTNBR"].ToString();
-                loan.LastName = dr["LASTNAME"].ToString();
-                loan.FirstName = dr["FIRSTNAME"].ToString();
-                loan.Email = dr["EMAIL"].ToString();
-                loan.Minor = dr["MINOR"].ToString();
-
-                string year = dr["YEAR"].ToString();
-                if (year != "")
-                {
-                    Convert.ToInt32(year);
-                }
-
-                loan.Make = dr["MAKE"].ToString();
-                loan.Model = dr["MODEL"].ToString();
-                loan.Vin = dr["VIN"].ToString();
-
-                string balLimit = dr["BAL/LIMIT"].ToString();
-                if (balLimit != "")
-                {
-                    loan.LoanAmountLimit = Convert.ToDecimal(balLimit);
-                }
-
-                string mt = dr["MO TERM"].ToString();
-                if (mt != "")
-                {
-                    loan.MonthTerm = Convert.ToInt32(mt);
-                }
-
-                string pmt = dr["PAYMENT"].ToString();
-                if (pmt != "")
-                {
-                    loan.Payment = Convert.ToDecimal(pmt);
-                }
-
-                loan.PaymentFreq = dr["PMTFREQ"].ToString();
-
-                string rate = dr["RATE"].ToString();
-                if (rate != "")
-                {
-                    loan.Rate = Convert.ToDouble(rate);
-                }
-
-                loan.RBP = dr["RBP"].ToString();
-                loan.CreditTier = dr["CREDIT TIER"].ToString();
-                loan.DTI = dr["DTI"].ToString();
-                loan.LTV = dr["LTV"].ToString();
-                loan.InsCo = dr["INS CO"].ToString();
-                loan.InsPolicy = dr["INS POLICY"].ToString();
-                loan.InsPhone = dr["INS PHONE"].ToString();
-                loan.DealerName = dr["DEALER NAME"].ToString();
-                loan.Distribution = dr["DISTRIBUTION"].ToString();
-                loan.CollateralHold = dr["COLLATERAL HOLD"].ToString();
-                loan.PreAuth = dr["PRE AUTH"].ToString();
-                loan.Dp = dr["DP"].ToString();
-                loan.Gap = dr["GAP"].ToString();
-
-                string gd = dr["GAP $"].ToString();
-                if (gd != "")
-                {
-                    loan.GapAmount = Convert.ToDecimal(gd);
-                }
-
-                loan.Mbpyn = dr["MBPYN"].ToString();
-
-                string mbpAmount = dr["GAP $"].ToString();
-                if (mbpAmount != "")
-                {
-                    loan.MbpAmount = Convert.ToDecimal(mbpAmount);
-                }
-
-                string statementAcc = dr["GAP $"].ToString();
-                if (statementAcc != "")
-                {
-                    loan.StatementAcct = Convert.ToDecimal(statementAcc);
-                }
-
-                loan.OnlineAccess = dr["ONLINE ACCESS"].ToString();
-                loan.NumberOfDeficiencies = 0;
-                loan.LoanStatus = dr["STATUS"].ToString();
-
-                _context.Loans.Add(loan);
+                _context.SaveChanges();
             }
+            catch (Exception ex)
+            {
 
-            _context.SaveChanges();
+            }            
         }
 
         private static void GetFromTemenos()

@@ -16,6 +16,8 @@ namespace ConsumerLoanDB.Models
     {
         public static DataTable GetLoanInfoTemenos()
         {
+            ConsumerLoanContext _context = new ConsumerLoanContext();
+
             string sqlconnect = ConfigurationManager.ConnectionStrings["ConsumerLoanSQL3"].ConnectionString;
 
             DataTable dt = new DataTable();
@@ -31,6 +33,23 @@ namespace ConsumerLoanDB.Models
                 SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
 
                 dt.Load(sqlDataReader);
+
+                var existing = _context.ConsumerLoanQCs.AsEnumerable().ToList();
+
+                foreach(var exist in existing)
+                {
+                    string loanappid = exist.LoanApplicationId;
+                    foreach(DataRow dr in dt.Rows)
+                    {
+                        string lid = dr["LoanApplicationId"].ToString();
+                        if(loanappid == lid)
+                        {
+                            dt.Rows.Remove(dr);
+                            break;
+                        }
+                    }
+                }
+
             }
             catch(Exception ex)
             {
@@ -54,15 +73,61 @@ namespace ConsumerLoanDB.Models
 
             DataTable dtResults = new DataTable();
 
-            using (conn)
+            try
             {
-                conn.Open();
-                cmd.Connection = conn;
-                cmd.CommandText = "ORADEV.QCNEWLOANS";
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add("SYS_REFCURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+                using (conn)
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    cmd.CommandText = "ORADEV.QCNEWLOANS";
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("SYS_REFCURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
 
-                dtResults.Load(cmd.ExecuteReader());
+                    dtResults.Load(cmd.ExecuteReader());
+                }
+
+                var existingLoans = _context.Loans.AsEnumerable().ToList();
+
+                foreach (var exLoan in existingLoans)
+                {
+                    string acct = exLoan.AcctBr;
+                    foreach (DataRow dr in dtResults.Rows)
+                    {
+                        string drAcct = dr["ACCTNBR"].ToString();
+                        string active = dr["STATUS"].ToString();
+                        if (acct == drAcct)
+                        {
+                            if (active != "ACTIVE")
+                            {
+                                int loanId = exLoan.LoanId;
+
+                                var loanDefs = _context.LoanDeficiencies
+                                    .Where(d => d.LoanId == loanId)
+                                    .ToArray();
+
+                                foreach (var loandef in loanDefs)
+                                {
+                                    _context.LoanDeficiencies.Remove(loandef);
+                                }
+
+                                //var loan = _context.Loans
+                                //    .Where(l => l.LoanId == loanId)
+                                //    .FirstOrDefault();
+
+                                //_context.Loans.Remove(loan);
+
+                                _context.SaveChanges();
+                            }
+
+                            dtResults.Rows.Remove(dr);
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string mess = ex.Message;
             }
 
             return dtResults;
