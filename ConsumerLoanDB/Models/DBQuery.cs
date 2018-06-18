@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
-using ConsumerLoan.Models;
-using ConsumerLoan;
 using Oracle.ManagedDataAccess.Client;
+using System.Reflection;
 
 namespace ConsumerLoanDB.Models
 {
@@ -86,7 +85,31 @@ namespace ConsumerLoanDB.Models
                     dtResults.Load(cmd.ExecuteReader());
                 }
 
-                var existingLoans = _context.Loans.AsEnumerable().ToList();
+                var existingLoans = GetExistingLoans();
+
+                foreach (var l in existingLoans)
+                {
+                    if (l.LoanStatus != "ACTIVE")
+                    {
+                        var loanDefs = _context.LoanDeficiencies
+                            .Where(d => d.LoanId == l.LoanId)
+                            .ToArray();
+
+                        foreach (var loandef in loanDefs)
+                        {
+                            var def = _context.LoanDeficiencies
+                                .Where(d => d.LoanDeficiencyId == loandef.LoanDeficiencyId)
+                                .FirstOrDefault();
+
+                            if (def != null)
+                            {
+                                def.DateCorrected = DateTime.Now;
+                                def.Comment = "Loan closed, corrections no longer necessary - Closed/Inactive Loan -" + DateTime.Now.ToShortDateString() + ";";
+                                _context.SaveChanges();
+                            }
+                        }
+                    }
+                }
 
                 foreach (var exLoan in existingLoans)
                 {
@@ -97,28 +120,6 @@ namespace ConsumerLoanDB.Models
                         string active = dr["STATUS"].ToString();
                         if (acct == drAcct)
                         {
-                            if (active != "ACTIVE")
-                            {
-                                int loanId = exLoan.LoanId;
-
-                                var loanDefs = _context.LoanDeficiencies
-                                    .Where(d => d.LoanId == loanId)
-                                    .ToArray();
-
-                                foreach (var loandef in loanDefs)
-                                {
-                                    _context.LoanDeficiencies.Remove(loandef);
-                                }
-
-                                //var loan = _context.Loans
-                                //    .Where(l => l.LoanId == loanId)
-                                //    .FirstOrDefault();
-
-                                //_context.Loans.Remove(loan);
-
-                                _context.SaveChanges();
-                            }
-
                             dtResults.Rows.Remove(dr);
                             break;
                         }
@@ -131,6 +132,62 @@ namespace ConsumerLoanDB.Models
             }
 
             return dtResults;
+        }
+
+        private static List<Loan> GetExistingLoans()
+        {
+            List<Loan> data = new List<Loan>();
+
+            string sqlconnect = ConfigurationManager.ConnectionStrings["ConsumerLoanContext"]
+                .ConnectionString;
+
+            string selectQuery = "SELECT LoanId, AcctBr FROM Loans";
+            SqlConnection sqlConnection = new SqlConnection(sqlconnect);
+            DataTable dt = new DataTable();
+
+            try
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand(selectQuery, sqlConnection);
+                SqlDataAdapter sqlDa = new SqlDataAdapter(sqlCommand);
+                SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+                dt.Load(sqlDataReader);
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    Loan item = GetItem<Loan>(row);
+                    data.Add(item);
+                }
+                return data;
+            }
+            catch
+            {
+                sqlConnection.Close();
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+
+            return data;
+        }
+
+        private static T GetItem<T>(DataRow dr)
+        {
+            Type temp = typeof(T);
+            T obj = Activator.CreateInstance<T>();
+
+            foreach (DataColumn column in dr.Table.Columns)
+            {
+                foreach (PropertyInfo pro in temp.GetProperties())
+                {
+                    if (pro.Name == column.ColumnName)
+                        pro.SetValue(obj, dr[column.ColumnName], null);
+                    else
+                        continue;
+                }
+            }
+            return obj;
         }
     }
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
-namespace ConsumerLoan.Models
+namespace ConsumerLoanDB.Models
 {
     public class Log
     {

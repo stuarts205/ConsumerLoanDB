@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
-namespace ConsumerLoan.Models
+namespace ConsumerLoanDB.Models
 {
     public class Loan
     {
@@ -52,7 +52,7 @@ namespace ConsumerLoan.Models
         [StringLength(100)]
         public string Minor { get; set; }
 
-        public int Year { get; set; }
+        public int? Year { get; set; }
 
         [StringLength(50)]
         public string Make { get; set; }
@@ -65,7 +65,7 @@ namespace ConsumerLoan.Models
 
         public decimal? LoanAmountLimit { get; set; }
 
-        public int MonthTerm { get; set; }
+        public int? MonthTerm { get; set; }
 
         public decimal? Payment { get; set; }
 

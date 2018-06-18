@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using ConsumerLoanDB.Models;
-using ConsumerLoan.Models;
+using System.Configuration;
 
 namespace ConsumerLoanDB
 {
@@ -21,14 +21,14 @@ namespace ConsumerLoanDB
 
         private static void DeleteRecords()
         {
-            ConsumerLoanContext _context = new ConsumerLoanContext();
+            //ConsumerLoanContext _context = new ConsumerLoanContext();
 
-            _context.Database.ExecuteSqlCommand("DELETE FROM LoanDeficiencies " +
-                "DBCC CHECKIDENT('LoanDeficiencies', RESEED, 0)");
-            _context.Database.ExecuteSqlCommand("DELETE FROM ConsumerLoanQCs " +
-                                                "DBCC CHECKIDENT('ConsumerLoanQCs', RESEED, 0)");
-            _context.Database.ExecuteSqlCommand("DELETE FROM Loans " +
-                                                "DBCC CHECKIDENT('Loans', RESEED, 0)");
+            //_context.Database.ExecuteSqlCommand("DELETE FROM LoanDeficiencies " +
+            //    "DBCC CHECKIDENT('LoanDeficiencies', RESEED, 0)");
+            //_context.Database.ExecuteSqlCommand("DELETE FROM ConsumerLoanQCs " +
+            //                                    "DBCC CHECKIDENT('ConsumerLoanQCs', RESEED, 0)");
+            //_context.Database.ExecuteSqlCommand("DELETE FROM Loans " +
+            //                                    "DBCC CHECKIDENT('Loans', RESEED, 0)");
         }
 
         private static void GetFromCore()
@@ -49,6 +49,7 @@ namespace ConsumerLoanDB
                         Loan loan = new Loan();
 
                         loan.Branch = dr["BRANCH"].ToString();
+                        loan.MemberNumber = dr["TAXID"].ToString();
 
                         string cd = dr["CONTRACT DATE"].ToString();
                         if (cd != "")
@@ -131,13 +132,13 @@ namespace ConsumerLoanDB
 
                         loan.Mbpyn = dr["MBPYN"].ToString();
 
-                        string mbpAmount = dr["GAP $"].ToString();
+                        string mbpAmount = dr["MBPAMT"].ToString();
                         if (mbpAmount != "")
                         {
                             loan.MbpAmount = Convert.ToDecimal(mbpAmount);
                         }
 
-                        string statementAcc = dr["GAP $"].ToString();
+                        string statementAcc = dr["STATEMENT ACCT"].ToString();
                         if (statementAcc != "")
                         {
                             loan.StatementAcct = Convert.ToDecimal(statementAcc);
@@ -147,15 +148,107 @@ namespace ConsumerLoanDB
                         loan.NumberOfDeficiencies = 0;
                         loan.LoanStatus = dr["STATUS"].ToString();
 
-                        _context.Loans.Add(loan);
+                        InsertLoan(loan);
+
+                        //_context.Loans.Add(loan);
                     }
                 }
-                _context.SaveChanges();
+                //_context.SaveChanges();
             }
             catch (Exception ex)
             {
-
+                string message = ex.Message;
             }            
+        }
+
+        private static void InsertLoan(Loan loan)
+        {
+            string sqlconnect = ConfigurationManager.ConnectionStrings["ConsumerLoanContext"]
+                .ConnectionString;
+
+            string insertQuery =
+                "OPEN SYMMETRIC KEY TaxIdSymmetricKey " +
+                "DECRYPTION BY CERTIFICATE TaxIdCertificate; " +
+                "INSERT INTO Loans VALUES(@LoanTypeId, @Branch, " +
+                "   EncryptByKey(Key_GUID('TaxIdSymmetricKey'), CONVERT(varchar,@MemberNumber)), " +
+                "   @ContractDate, @Originator, " +
+                "   @Witness, @FinalUW, @Funder, @SLAppNumber, @AcctBr, @LastName, @FirstName, @Email," +
+                "   @Minor, @Year, @Make, @Model, @Vin, @LoanAmountLimit, @MonthTerm, @Payment, @PaymentFreq, " +
+                "   @Rate, @RBP, @CreditTier, @DTI, @LTV, @CollateralHold, @ClDis, @Gap, @GapAmount, @Mbpyn, " +
+                "   @MbpAmount, @StatementAcct, @OnlineAccess, @StatusDate, @InsCo, @InsPolicy, @InsPhone, " +
+                "   @DealerName, @Distribution, @PreAuth, @Dp, @ReviewDate, @QCReviewer, @NumberOfDeficiencies, " +
+                "   @AppId, @LoanStatus) " +
+                "CLOSE SYMMETRIC KEY TaxIdSymmetricKey;";
+
+            SqlConnection sqlConnection = new SqlConnection(sqlconnect);
+
+            if (loan != null)
+            {
+                try
+                {
+                    sqlConnection.Open();
+
+                    SqlCommand cmd = new SqlCommand(insertQuery, sqlConnection);
+                    cmd.Parameters.Add("@LoanTypeId", SqlDbType.Int).Value = (object)DBNull.Value;
+                    cmd.Parameters.Add("@Branch", SqlDbType.NVarChar).Value = loan.Branch ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@MemberNumber", SqlDbType.NVarChar).Value = loan.MemberNumber ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@ContractDate", SqlDbType.DateTime).Value = loan.ContractDate ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Originator", SqlDbType.NVarChar).Value = loan.Originator ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Witness", SqlDbType.NVarChar).Value = loan.Witness ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@FinalUw", SqlDbType.NVarChar).Value = loan.FinalUW ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Funder", SqlDbType.NVarChar).Value = loan.Funder ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@SLAppNumber", SqlDbType.NVarChar).Value = loan.SLAppNumber ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@AcctBr", SqlDbType.NVarChar).Value = loan.AcctBr ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@LastName", SqlDbType.NVarChar).Value = loan.LastName ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@FirstName", SqlDbType.NVarChar).Value = loan.FirstName ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Email", SqlDbType.NVarChar).Value = loan.Email ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Minor", SqlDbType.NVarChar).Value = loan.Minor ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Year", SqlDbType.Int).Value = loan.Year ?? 0;
+                    cmd.Parameters.Add("@Make", SqlDbType.NVarChar).Value = loan.Make ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Model", SqlDbType.NVarChar).Value = loan.Model ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Vin", SqlDbType.NVarChar).Value = loan.Vin ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@LoanAmountLimit", SqlDbType.Decimal).Value = loan.LoanAmountLimit ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@MonthTerm", SqlDbType.Int).Value = loan.MonthTerm ?? 0;
+                    cmd.Parameters.Add("@Payment", SqlDbType.Decimal).Value = loan.Payment ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@PaymentFreq", SqlDbType.NVarChar).Value = loan.PaymentFreq ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Rate", SqlDbType.Float).Value = loan.Rate ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@RBP", SqlDbType.NVarChar).Value = loan.RBP ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@CreditTier", SqlDbType.NVarChar).Value = loan.CreditTier ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@DTI", SqlDbType.NVarChar).Value = loan.DTI ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@LTV", SqlDbType.NVarChar).Value = loan.LTV ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@CollateralHold", SqlDbType.NVarChar).Value = loan.CollateralHold ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@ClDis", SqlDbType.NVarChar).Value = loan.ClDis ?? "";
+                    cmd.Parameters.Add("@Gap", SqlDbType.NVarChar).Value = loan.Gap ?? "";
+                    cmd.Parameters.Add("@GapAmount", SqlDbType.Decimal).Value = loan.GapAmount ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@Mbpyn", SqlDbType.NVarChar).Value = loan.Mbpyn ?? "";
+                    cmd.Parameters.Add("@MbpAmount", SqlDbType.Decimal).Value = loan.MbpAmount ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@StatementAcct", SqlDbType.Decimal).Value = loan.StatementAcct ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@OnlineAccess", SqlDbType.NVarChar).Value = loan.OnlineAccess ?? "";
+                    cmd.Parameters.Add("@StatusDate", SqlDbType.DateTime).Value = loan.StatusDate ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@InsCo", SqlDbType.NVarChar).Value = loan.InsCo ?? "";
+                    cmd.Parameters.Add("@InsPolicy", SqlDbType.NVarChar).Value = loan.InsPolicy ?? "";
+                    cmd.Parameters.Add("@InsPhone", SqlDbType.NVarChar).Value = loan.InsPhone ?? "";
+                    cmd.Parameters.Add("@DealerName", SqlDbType.NVarChar).Value = loan.DealerName ?? "";
+                    cmd.Parameters.Add("@Distribution", SqlDbType.NVarChar).Value = loan.Distribution ?? "";
+                    cmd.Parameters.Add("@PreAuth", SqlDbType.NVarChar).Value = loan.PreAuth ?? "";
+                    cmd.Parameters.Add("@Dp", SqlDbType.NVarChar).Value = loan.Dp ?? "";
+                    cmd.Parameters.Add("@ReviewDate", SqlDbType.DateTime).Value = loan.ReviewDate ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@QCReviewer", SqlDbType.NVarChar).Value = loan.QCReviewer ?? "";
+                    cmd.Parameters.Add("@NumberOfDeficiencies", SqlDbType.Int).Value = loan.NumberOfDeficiencies ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@AppId", SqlDbType.NVarChar).Value = loan.AppId ?? (object)DBNull.Value;
+                    cmd.Parameters.Add("@LoanStatus", SqlDbType.NVarChar).Value = loan.LoanStatus ?? "";
+                    cmd.ExecuteNonQuery();
+                }
+                catch(Exception ex)
+                {
+                    string message = ex.Message;
+                    sqlConnection.Close();
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
         }
 
         private static void GetFromTemenos()
@@ -231,7 +324,7 @@ namespace ConsumerLoanDB
                         _context.ConsumerLoanQCs.Add(clqc);
                     }
 
-                    _context.SaveChanges();
+                    //_context.SaveChanges();
                 }
                 catch (Exception ex)
                 {
