@@ -150,10 +150,10 @@ namespace ConsumerLoanDB
 
                         InsertLoan(loan);
 
-                        //_context.Loans.Add(loan);
+                        _context.Loans.Add(loan);
                     }
                 }
-                //_context.SaveChanges();
+                _context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -324,7 +324,7 @@ namespace ConsumerLoanDB
                         _context.ConsumerLoanQCs.Add(clqc);
                     }
 
-                    //_context.SaveChanges();
+                    _context.SaveChanges();
                 }
                 catch (Exception ex)
                 {
