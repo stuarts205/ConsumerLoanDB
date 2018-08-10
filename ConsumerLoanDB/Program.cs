@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.SqlClient;
 using ConsumerLoanDB.Models;
 using System.Configuration;
+using System.Net.Mail;
 
 namespace ConsumerLoanDB
 {
@@ -149,15 +150,14 @@ namespace ConsumerLoanDB
                         loan.LoanStatus = dr["STATUS"].ToString();
 
                         InsertLoan(loan);
-
-                        _context.Loans.Add(loan);
                     }
                 }
-                _context.SaveChanges();
             }
             catch (Exception ex)
             {
                 string message = ex.Message;
+                EmailErrors(message, "stuart.smith");
+                Environment.Exit(0);
             }            
         }
 
@@ -242,7 +242,9 @@ namespace ConsumerLoanDB
                 catch(Exception ex)
                 {
                     string message = ex.Message;
+                    EmailErrors(message, "stuart.smith");
                     sqlConnection.Close();
+                    Environment.Exit(0);
                 }
                 finally
                 {
@@ -328,9 +330,34 @@ namespace ConsumerLoanDB
                 }
                 catch (Exception ex)
                 {
-                    string mess = ex.Message;
+                    string message = ex.Message;
+                    EmailErrors(message, "stuart.smith");
+                    Environment.Exit(0);
                 }
             }
+        }
+
+        private static void EmailErrors(string message, string email)
+        {
+            try
+            {
+                SmtpClient sc = new SmtpClient("192.168.19.196");
+                sc.Port = 25;
+                sc.UseDefaultCredentials = true;
+                MailMessage msg = new MailMessage();
+
+                msg.From = new MailAddress("noreply@dfcu.com");
+                msg.To.Add(new MailAddress(email));
+                msg.Subject = "Vendor Contract failed";
+                msg.IsBodyHtml = true;
+
+                msg.Body = message;
+                sc.Send(msg);
+            }
+            catch
+            {
+
+            }            
         }
     }
 }
