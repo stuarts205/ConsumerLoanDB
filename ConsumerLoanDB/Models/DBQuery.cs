@@ -141,7 +141,7 @@ namespace ConsumerLoanDB.Models
             string sqlconnect = ConfigurationManager.ConnectionStrings["ConsumerLoanContext"]
                 .ConnectionString;
 
-            string selectQuery = "SELECT LoanId, AcctBr FROM Loans";
+            string selectQuery = "SELECT LoanId, AcctBr, LoanStatus FROM Loans";
             SqlConnection sqlConnection = new SqlConnection(sqlconnect);
             DataTable dt = new DataTable();
 
