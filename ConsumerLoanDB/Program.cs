@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using ConsumerLoanDB.Models;
 using System.Configuration;
 using System.Net.Mail;
+using System.Net;
 
 namespace ConsumerLoanDB
 {
@@ -341,9 +342,14 @@ namespace ConsumerLoanDB
         {
             try
             {
-                SmtpClient sc = new SmtpClient("192.168.19.196");
-                sc.Port = 25;
-                sc.UseDefaultCredentials = true;
+                int port = 587;
+                string server = "smtp.office365.com";
+                SmtpClient sc = new SmtpClient();
+                sc.Host = server;
+                sc.Port = port;
+                sc.EnableSsl = true;
+                sc.UseDefaultCredentials = false;
+                sc.Credentials = new NetworkCredential("smtp@dfcu.com", "Sh0wm3th3m0n3y!", "office365.com");
                 MailMessage msg = new MailMessage();
 
                 msg.From = new MailAddress("noreply@dfcu.com");
