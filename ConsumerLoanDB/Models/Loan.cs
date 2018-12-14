@@ -143,5 +143,7 @@ namespace ConsumerLoanDB.Models
         [StringLength(50)]
         public string LoanStatus { get; set; }
 
+        public string TaxId { get; set; }
+
     }
 }

@@ -116,6 +116,13 @@ namespace ConsumerLoanDB.Models
                     string acct = exLoan.AcctBr;
                     foreach (DataRow dr in dtResults.Rows)
                     {
+                        //string loanT = dr["Minor"].ToString();
+
+                        //if (loanT.Contains("Share"))
+                        //{
+                        //    string col = dr["CollateralHold"].ToString();
+                        //}
+
                         string drAcct = dr["ACCTNBR"].ToString();
                         string active = dr["STATUS"].ToString();
                         if (acct == drAcct)
