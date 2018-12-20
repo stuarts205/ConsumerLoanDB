@@ -16,7 +16,7 @@ namespace ConsumerLoanDB
     {
         static void Main(string[] args)
         {
-            //DeleteRecords();
+            DeleteRecords();
             GetFromTemenos();
             GetFromCore();
         }
@@ -45,7 +45,6 @@ namespace ConsumerLoanDB
             {
                 foreach (DataRow dr in dt.Rows)
                 {
-
                     string status = dr["STATUS"].ToString();
 
                     if(status == "ACTIVE")
@@ -126,6 +125,11 @@ namespace ConsumerLoanDB
                         loan.CollateralHold = dr["COLLATERAL HOLD"].ToString();
                         loan.PreAuth = dr["PRE AUTH"].ToString();
                         loan.Dp = dr["DP"].ToString();
+
+                        if (loan.Minor.Contains("VISA"))
+                        {
+                            loan.Dp = DBQuery.GetNameFromCore(dr["ACCTNBR"].ToString());
+                        }                        
 
                         string gd = dr["GAP AMOUNT"].ToString();
                         if (gd != "")

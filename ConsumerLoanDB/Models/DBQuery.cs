@@ -158,7 +158,7 @@ namespace ConsumerLoanDB.Models
                 SqlCommand sqlCommand = new SqlCommand(selectQuery, sqlConnection);
                 SqlDataAdapter sqlDa = new SqlDataAdapter(sqlCommand);
                 SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
-                dt.Load(sqlDataReader);
+                dt.Load(sqlDataReader);                
 
                 foreach (DataRow row in dt.Rows)
                 {
@@ -195,6 +195,93 @@ namespace ConsumerLoanDB.Models
                 }
             }
             return obj;
+        }
+
+        public static string GetNameFromCore(string accntnbr)
+        {
+            string accountNbr = String.Empty;
+            string dp = String.Empty;
+            ConsumerLoanContext _context = new ConsumerLoanContext();
+            OracleConnectionFactory _oralceConnection = new OracleConnectionFactory();
+
+            var conn = _oralceConnection.GetOracleConnection();
+            var cmd = _oralceConnection.OracleCommand();
+
+            DataTable dtResults = new DataTable();
+
+            string query = "SELECT extacctnbr FROM acctextorgid WHERE ACCTNBR = " + accntnbr;
+
+            try
+            {
+                using (conn)
+                {
+                    OracleCommand command = new OracleCommand(query, conn);
+                    conn.Open();
+                    dtResults.Load(command.ExecuteReader());
+
+                    foreach(DataRow dr in dtResults.Rows)
+                    {
+                        accountNbr = dr["extacctnbr"].ToString();
+                    }
+
+                    if (!String.IsNullOrEmpty(accountNbr))
+                    {
+                        dp = DebtProtectionOnCreditCards(accountNbr);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string mess = ex.Message;
+                conn.Open();
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return dp;
+        }
+
+        public static string DebtProtectionOnCreditCards(string accountid)
+        {
+            string dp = String.Empty;
+            string sqlconnect = ConfigurationManager.ConnectionStrings["CcmContext"].ConnectionString;
+            SqlConnection sqlConnection = new SqlConnection(sqlconnect);
+            DataTable dt = new DataTable();
+
+            string query = 
+                "select b.name \"DEBT PROTECTION TYPE\" " +
+                "from AddOnCreditInsurancePolicyCertificate a " +
+                "left outer join AddOnCreditInsurancePolicyConfiguration b on a.PolicyId = b.PolicyId " +
+                "left outer join Account C on a.accountid = C.accountid " +
+                "WHERE c.accountid = " + Convert.ToInt32(accountid);
+
+            try
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand(sqlconnect, sqlConnection);
+                sqlCommand.CommandText = query;
+                SqlDataAdapter sqlDa = new SqlDataAdapter(sqlCommand);
+                SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+                dt.Load(sqlDataReader);
+
+                foreach(DataRow dr in dt.Rows)
+                {
+                    dp = dr["DEBT PROTECTION TYPE"].ToString();
+                }
+            }
+            catch(Exception ex)
+            {
+                string message = ex.Message;
+                sqlConnection.Close();
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+
+            return dp;
         }
     }
 }
