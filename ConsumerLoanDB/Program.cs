@@ -16,23 +16,24 @@ namespace ConsumerLoanDB
     {
         static void Main(string[] args)
         {
-            DeleteRecords();
+            //DeleteRecords();
+            //Co co = DBQuery.GetCoBorrowerInfo(756171535);
             GetFromTemenos();
             GetFromCore();
         }
 
         private static void DeleteRecords()
         {
-            //ConsumerLoanContext _context = new ConsumerLoanContext();
+            ConsumerLoanContext _context = new ConsumerLoanContext();
 
-            //_context.Database.ExecuteSqlCommand("DELETE FROM Documents " +
-            //                                    "DBCC CHECKIDENT('Documents', RESEED, 0)");
-            //_context.Database.ExecuteSqlCommand("DELETE FROM LoanDeficiencies " +
-            //                                    "DBCC CHECKIDENT('LoanDeficiencies', RESEED, 0)");
-            //_context.Database.ExecuteSqlCommand("DELETE FROM ConsumerLoanQCs " +
-            //                                    "DBCC CHECKIDENT('ConsumerLoanQCs', RESEED, 0)");
-            //_context.Database.ExecuteSqlCommand("DELETE FROM Loans " +
-            //                                    "DBCC CHECKIDENT('Loans', RESEED, 0)");
+            _context.Database.ExecuteSqlCommand("DELETE FROM Documents " +
+                                                "DBCC CHECKIDENT('Documents', RESEED, 0)");
+            _context.Database.ExecuteSqlCommand("DELETE FROM LoanDeficiencies " +
+                                                "DBCC CHECKIDENT('LoanDeficiencies', RESEED, 0)");
+            _context.Database.ExecuteSqlCommand("DELETE FROM ConsumerLoanQCs " +
+                                                "DBCC CHECKIDENT('ConsumerLoanQCs', RESEED, 0)");
+            _context.Database.ExecuteSqlCommand("DELETE FROM Loans " +
+                                                "DBCC CHECKIDENT('Loans', RESEED, 0)");
         }
 
         private static void GetFromCore()
@@ -71,7 +72,7 @@ namespace ConsumerLoanDB
                         loan.FinalUW = dr["FINAL UW"].ToString();
                         loan.Funder = dr["FUNDER"].ToString();
                         loan.SLAppNumber = dr["SL APP#"].ToString();
-                        loan.AcctBr = dr["ACCTNBR"].ToString();
+                        loan.AcctBr = dr["ACCTNBR"].ToString(); 
                         loan.LastName = dr["LASTNAME"].ToString();
                         loan.FirstName = dr["FIRSTNAME"].ToString();
                         loan.Email = dr["EMAIL"].ToString();
@@ -156,6 +157,14 @@ namespace ConsumerLoanDB
                         loan.LoanStatus = dr["STATUS"].ToString();
                         loan.TaxId = dr["TaxId"].ToString();
 
+                        Co co = DBQuery.GetCoBorrowerInfo(Convert.ToInt32(loan.AcctBr));
+
+                        if(co != null)
+                        {
+                            loan.CoBorrower = co.CoBorrower;
+                            loan.CoSigner = co.CoSigner;
+                        }                        
+
                         InsertLoan(loan);
                     }
                 }
@@ -181,13 +190,13 @@ namespace ConsumerLoanDB
                 "   Minor, Year, Make, Model, Vin, LoanAmountLimit, MonthTerm, Payment, PaymentFreq, " +
                 "   Rate, RBP, CreditTier, DTI, LTV, CollateralHold, ClDis, Gap, GapAmount, Mbpyn, " +
                 "   MbpAmount, StatementAcct, OnlineAccess, StatusDate, InsCo, InsPolicy, InsPhone, " +
-                "   DealerName, Distribution, PreAuth, Dp, LoanStatus, TaxId) " +
+                "   DealerName, Distribution, PreAuth, Dp, LoanStatus, CoBorrower, CoSigner, TaxId) " +
                 "VALUES(@LoanTypeId, @Branch, @MemberNumber, @ContractDate, @Originator, " +
                 "   @Witness, @FinalUW, @Funder, @SLAppNumber, @AcctBr, @LastName, @FirstName, @Email," +
                 "   @Minor, @Year, @Make, @Model, @Vin, @LoanAmountLimit, @MonthTerm, @Payment, @PaymentFreq, " +
                 "   @Rate, @RBP, @CreditTier, @DTI, @LTV, @CollateralHold, @ClDis, @Gap, @GapAmount, @Mbpyn, " +
                 "   @MbpAmount, @StatementAcct, @OnlineAccess, @StatusDate, @InsCo, @InsPolicy, @InsPhone, " +
-                "   @DealerName, @Distribution, @PreAuth, @Dp, @LoanStatus, " +
+                "   @DealerName, @Distribution, @PreAuth, @Dp, @LoanStatus, @CoBorrower, @CoSigner, " +
                 "   EncryptByKey(Key_GUID('TaxIdSymmetricKey'), CONVERT(varchar,@TaxId))) " +
                 "CLOSE SYMMETRIC KEY TaxIdSymmetricKey;";
 
@@ -244,6 +253,8 @@ namespace ConsumerLoanDB
                     cmd.Parameters.Add("@PreAuth", SqlDbType.NVarChar).Value = loan.PreAuth ?? "";
                     cmd.Parameters.Add("@Dp", SqlDbType.NVarChar).Value = loan.Dp ?? "";
                     cmd.Parameters.Add("@TaxId", SqlDbType.VarChar).Value = loan.TaxId ?? "";
+                    cmd.Parameters.Add("@CoBorrower", SqlDbType.NVarChar).Value = loan.CoBorrower ?? "";
+                    cmd.Parameters.Add("@CoSigner", SqlDbType.NVarChar).Value = loan.CoSigner ?? "";
                     //cmd.Parameters.Add("@ReviewDate", SqlDbType.DateTime).Value = (object)DBNull.Value;
                     //cmd.Parameters.Add("@QCReviewer", SqlDbType.NVarChar).Value = "";
                     //cmd.Parameters.Add("@NumberOfDeficiencies", SqlDbType.Int).Value = (object)DBNull.Value;

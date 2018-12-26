@@ -145,5 +145,8 @@ namespace ConsumerLoanDB.Models
 
         public string TaxId { get; set; }
 
+        public string CoBorrower { get; set; }
+        public string CoSigner { get; set; }
+
     }
 }

@@ -62,6 +62,78 @@ namespace ConsumerLoanDB.Models
             return dt;
         }
 
+        public static Co GetCoBorrowerInfo(int accNbr)
+        {
+            ConsumerLoanContext _context = new ConsumerLoanContext();
+            OracleConnectionFactory _oralceConnection = new OracleConnectionFactory();
+
+            var conn = _oralceConnection.GetOracleConnection();
+            var cmd = _oralceConnection.OracleCommand();
+
+            DataTable dtResults = new DataTable();
+
+            Co co = new Co();
+
+            string query =
+                "SELECT ACCT.ACCTNBR, PERS.FIRSTNAME, PERS.LASTNAME, ACCT.CURRMIACCTTYPCD, ACCT.CONTRACTDATE, " +
+                "COBORROWER.FIRSTNAME || ' ' || COBORROWER.LASTNAME \"CO-BORROWER\", " +
+                "COSIGNER.FIRSTNAME || ' ' || COSIGNER.LASTNAME \"COSIGNER\" " +
+                "FROM ACCT " +
+                "LEFT OUTER JOIN PERS ON ACCT.TAXRPTFORPERSNBR = PERS.PERSNBR " +
+                "LEFT OUTER JOIN ACCTACCTROLEPERS ON ACCT.ACCTNBR = ACCTACCTROLEPERS.ACCTNBR " +
+                "AND ACCTACCTROLEPERS.ACCTROLECD = 'OWN' " +
+                "LEFT OUTER JOIN ACCTROLE ON ACCTACCTROLEPERS.ACCTROLECD = ACCTROLE.ACCTROLECD " +
+                "LEFT OUTER JOIN PERS COBORROWER ON ACCTACCTROLEPERS.PERSNBR = COBORROWER.PERSNBR " +
+                "LEFT OUTER JOIN ACCTACCTROLEPERS ACCTACCTROLEPERS2 ON ACCT.ACCTNBR = ACCTACCTROLEPERS2.ACCTNBR " +
+                "AND ACCTACCTROLEPERS2.ACCTROLECD = 'LNCO' " +
+                "LEFT OUTER JOIN ACCTROLE ACCTROLE2 ON ACCTACCTROLEPERS2.ACCTROLECD = ACCTROLE2.ACCTROLECD " +
+                "LEFT OUTER JOIN PERS COSIGNER ON ACCTACCTROLEPERS2.PERSNBR = COSIGNER.PERSNBR " +
+                "WHERE ACCT.MJACCTTYPCD IN('CNS') AND ACCT.ACCTNBR = " + accNbr;
+
+            try
+            {
+                using (conn)
+                {
+                    OracleCommand command = new OracleCommand(query, conn);
+                    conn.Open();
+                    OracleDataReader reader;
+                    reader = command.ExecuteReader();
+                    dtResults.Load(command.ExecuteReader());
+
+                    while (reader.Read())
+                    {
+                        //co.CoBorrower = "test";
+                        //co.CoSigner = "test";
+
+                        string coBorrower = Convert.ToString(reader["CO-BORROWER"]).Trim();
+
+                        if (!String.IsNullOrEmpty(coBorrower))
+                        {
+                            co.CoBorrower = coBorrower;
+                        }
+
+                        string coSigner = Convert.ToString(reader["COSIGNER"]).Trim();
+
+                        if (!String.IsNullOrEmpty(coSigner))
+                        {
+                            co.CoSigner = coSigner;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string mess = ex.Message;
+                conn.Open();
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return co;
+        }            
+
         public static DataTable GetLoanInfoCore()
         {
             ConsumerLoanContext _context = new ConsumerLoanContext();
@@ -82,7 +154,7 @@ namespace ConsumerLoanDB.Models
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add("SYS_REFCURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
 
-                    dtResults.Load(cmd.ExecuteReader());
+                    dtResults.Load(cmd.ExecuteReader());                    
                 }
 
                 var existingLoans = GetExistingLoans();
@@ -129,14 +201,34 @@ namespace ConsumerLoanDB.Models
                         {
                             dtResults.Rows.Remove(dr);
                             break;
-                        }
-                    }
+                        }          
+                    }                    
                 }
+                
             }
             catch (Exception ex)
             {
                 string mess = ex.Message;
             }
+
+            DataTable dtDistinct = dtResults.Copy();
+
+            foreach(DataRow drDis in dtDistinct.Rows)
+            {
+                decimal ac = Convert.ToDecimal(drDis["ACCTNBR"].ToString());
+
+                var row = (from r in dtResults.AsEnumerable()
+                           where r.Field<decimal>("ACCTNBR") == ac
+                           select r).ToList();
+
+                if (row.Count > 1)
+                {
+                    for(int i = 1;i< row.Count; i++)
+                    {
+                        dtResults.Rows.Remove(row[i]);
+                    }   
+                }
+            }            
 
             return dtResults;
         }

@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Co.cs" />
     <Compile Include="Models\ConsumerLoanContext.cs" />
     <Compile Include="Models\ConsumerLoanQC.cs" />
     <Compile Include="Models\DBQuery.cs" />
