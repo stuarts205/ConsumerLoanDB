@@ -190,13 +190,13 @@ namespace ConsumerLoanDB
                 "   Minor, Year, Make, Model, Vin, LoanAmountLimit, MonthTerm, Payment, PaymentFreq, " +
                 "   Rate, RBP, CreditTier, DTI, LTV, CollateralHold, ClDis, Gap, GapAmount, Mbpyn, " +
                 "   MbpAmount, StatementAcct, OnlineAccess, StatusDate, InsCo, InsPolicy, InsPhone, " +
-                "   DealerName, Distribution, PreAuth, Dp, LoanStatus, CoBorrower, CoSigner, TaxId) " +
+                "   DealerName, Distribution, PreAuth, Dp, NumberOfDeficiencies, LoanStatus, CoBorrower, CoSigner, TaxId) " +
                 "VALUES(@LoanTypeId, @Branch, @MemberNumber, @ContractDate, @Originator, " +
                 "   @Witness, @FinalUW, @Funder, @SLAppNumber, @AcctBr, @LastName, @FirstName, @Email," +
                 "   @Minor, @Year, @Make, @Model, @Vin, @LoanAmountLimit, @MonthTerm, @Payment, @PaymentFreq, " +
                 "   @Rate, @RBP, @CreditTier, @DTI, @LTV, @CollateralHold, @ClDis, @Gap, @GapAmount, @Mbpyn, " +
                 "   @MbpAmount, @StatementAcct, @OnlineAccess, @StatusDate, @InsCo, @InsPolicy, @InsPhone, " +
-                "   @DealerName, @Distribution, @PreAuth, @Dp, @LoanStatus, @CoBorrower, @CoSigner, " +
+                "   @DealerName, @Distribution, @PreAuth, @Dp, @NumberOfDeficiencies, @LoanStatus, @CoBorrower, @CoSigner, " +
                 "   EncryptByKey(Key_GUID('TaxIdSymmetricKey'), CONVERT(varchar,@TaxId))) " +
                 "CLOSE SYMMETRIC KEY TaxIdSymmetricKey;";
 
@@ -252,6 +252,7 @@ namespace ConsumerLoanDB
                     cmd.Parameters.Add("@Distribution", SqlDbType.NVarChar).Value = loan.Distribution ?? "";
                     cmd.Parameters.Add("@PreAuth", SqlDbType.NVarChar).Value = loan.PreAuth ?? "";
                     cmd.Parameters.Add("@Dp", SqlDbType.NVarChar).Value = loan.Dp ?? "";
+                    cmd.Parameters.Add("@NumberOfDeficiencies", SqlDbType.Int).Value = loan.NumberOfDeficiencies;
                     cmd.Parameters.Add("@TaxId", SqlDbType.VarChar).Value = loan.TaxId ?? "";
                     cmd.Parameters.Add("@CoBorrower", SqlDbType.NVarChar).Value = loan.CoBorrower ?? "";
                     cmd.Parameters.Add("@CoSigner", SqlDbType.NVarChar).Value = loan.CoSigner ?? "";
