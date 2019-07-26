@@ -24,16 +24,16 @@ namespace ConsumerLoanDB
 
         private static void DeleteRecords()
         {
-            ConsumerLoanContext _context = new ConsumerLoanContext();
+            //ConsumerLoanContext _context = new ConsumerLoanContext();
 
-            _context.Database.ExecuteSqlCommand("DELETE FROM Documents " +
-                                                "DBCC CHECKIDENT('Documents', RESEED, 0)");
-            _context.Database.ExecuteSqlCommand("DELETE FROM LoanDeficiencies " +
-                                                "DBCC CHECKIDENT('LoanDeficiencies', RESEED, 0)");
-            _context.Database.ExecuteSqlCommand("DELETE FROM ConsumerLoanQCs " +
-                                                "DBCC CHECKIDENT('ConsumerLoanQCs', RESEED, 0)");
-            _context.Database.ExecuteSqlCommand("DELETE FROM Loans " +
-                                                "DBCC CHECKIDENT('Loans', RESEED, 0)");
+            //_context.Database.ExecuteSqlCommand("DELETE FROM Documents " +
+            //                                    "DBCC CHECKIDENT('Documents', RESEED, 0)");
+            //_context.Database.ExecuteSqlCommand("DELETE FROM LoanDeficiencies " +
+            //                                    "DBCC CHECKIDENT('LoanDeficiencies', RESEED, 0)");
+            //_context.Database.ExecuteSqlCommand("DELETE FROM ConsumerLoanQCs " +
+            //                                    "DBCC CHECKIDENT('ConsumerLoanQCs', RESEED, 0)");
+            //_context.Database.ExecuteSqlCommand("DELETE FROM Loans " +
+            //                                    "DBCC CHECKIDENT('Loans', RESEED, 0)");
         }
 
         private static void GetFromCore()
@@ -168,6 +168,9 @@ namespace ConsumerLoanDB
                         InsertLoan(loan);
                     }
                 }
+
+                EmailAfter(dt.Rows.Count);
+
             }
             catch (Exception ex)
             {
@@ -361,23 +364,50 @@ namespace ConsumerLoanDB
             }
         }
 
+        private static void EmailAfter(int count)
+        {
+            SmtpClient sc = GetSmtp();
+
+            MailMessage msg = new MailMessage();
+            MailAddressCollection toAddressList = new MailAddressCollection();
+            msg.From = new MailAddress("noreply@dfcu.com");
+            msg.To.Add("carolyn.burningham@dfcu.com");
+
+            msg.Subject = "Consumer Loan Daily Count";
+            msg.Body =
+                "<div style='font-family:Calibri;'>" +
+                $"   Consumer Loans finished successfullly.  Number of loans inserted: {count}" +
+                "   <br />" +
+                "   <br />" +
+                "</div>";
+            msg.IsBodyHtml = true;
+            sc.Send(msg);
+        }
+
+        private static SmtpClient GetSmtp()
+        {
+            int port = 587;
+            string server = "smtp.office365.com";
+            SmtpClient sc = new SmtpClient();
+            sc.Host = server;
+            sc.Port = port;
+            sc.EnableSsl = true;
+            sc.UseDefaultCredentials = false;
+            sc.Credentials = new NetworkCredential("smtp@dfcu.com", "Sh0wm3th3m0n3y!", "office365.com");
+
+            return sc;
+        }
+
         private static void EmailErrors(string message, string email)
         {
             try
             {
-                int port = 587;
-                string server = "smtp.office365.com";
-                SmtpClient sc = new SmtpClient();
-                sc.Host = server;
-                sc.Port = port;
-                sc.EnableSsl = true;
-                sc.UseDefaultCredentials = false;
-                sc.Credentials = new NetworkCredential("smtp@dfcu.com", "Sh0wm3th3m0n3y!", "office365.com");
-                MailMessage msg = new MailMessage();
+                SmtpClient sc = GetSmtp();
 
+                MailMessage msg = new MailMessage();
                 msg.From = new MailAddress("noreply@dfcu.com");
                 msg.To.Add(new MailAddress(email));
-                msg.Subject = "Vendor Contract failed";
+                msg.Subject = "Consumer Loan Failed";
                 msg.IsBodyHtml = true;
 
                 msg.Body = message;
