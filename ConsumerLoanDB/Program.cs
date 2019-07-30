@@ -67,7 +67,8 @@ namespace ConsumerLoanDB
                             loan.StatusDate = Convert.ToDateTime(sd);
                         }
 
-                        loan.Originator = dr["ORIGINATOR"].ToString();
+                        string originator = GetRightName(dr["ORIGINATOR"].ToString());
+                        loan.Originator = originator;
                         loan.Witness = dr["WITNESS"].ToString();
                         loan.FinalUW = dr["FINAL UW"].ToString();
                         loan.Funder = dr["FUNDER"].ToString();
@@ -178,6 +179,32 @@ namespace ConsumerLoanDB
                 EmailErrors(message, "stuart.smith");
                 Environment.Exit(0);
             }            
+        }
+
+        private static string GetRightName(string originator)
+        {
+            string name = String.Empty;
+
+            switch (originator)
+            {
+                case "Donald Barr":
+                    name = "Scott Barr";
+                    break;
+                case "Oketi Vehikite":
+                    name = "Susan Vehikite";
+                    break;
+                case "Sarah Jones":
+                    name = "Beth Jones";
+                    break;
+                case "Mary Nielson ":
+                    name = "Megan Nielson";
+                    break;
+                default:
+                    name = originator;
+                    break;
+            }
+
+            return name;
         }
 
         private static void InsertLoan(Loan loan)
