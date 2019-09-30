@@ -202,6 +202,9 @@ namespace ConsumerLoanDB
                 case "Mark Winger":
                     name = "David Winger";
                     break;
+                case "Leticia Bernal":
+                    name = "Leti Bernal";
+                    break;
                 default:
                     name = originator;
                     break;
