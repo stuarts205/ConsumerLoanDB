@@ -426,7 +426,7 @@ namespace ConsumerLoanDB
             sc.Port = port;
             sc.EnableSsl = true;
             sc.UseDefaultCredentials = false;
-            sc.Credentials = new NetworkCredential("smtp@dfcu.com", "Its@M3taph0r", "office365.com");
+            sc.Credentials = new NetworkCredential("smtp@dfcu.com", "Its@M3taph0r!", "office365.com");
 
             return sc;
         }
