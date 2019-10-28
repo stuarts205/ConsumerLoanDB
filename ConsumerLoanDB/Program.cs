@@ -399,11 +399,13 @@ namespace ConsumerLoanDB
 
         private static void EmailAfter(int count)
         {
-            SmtpClient sc = GetSmtp();
+            CuUtilitiesContext cu = new CuUtilitiesContext();
+            var settings = cu.SmtpSettings.FirstOrDefault(s => s.EmailAddress == "dfcusmtp");
+            SmtpClient sc = GetSmtp(settings);
 
             MailMessage msg = new MailMessage();
             MailAddressCollection toAddressList = new MailAddressCollection();
-            msg.From = new MailAddress("noreply@dfcu.com");
+            msg.From = new MailAddress(settings.Domain);
             msg.To.Add("carolyn.burningham@dfcu.com");
 
             msg.Subject = "Consumer Loan Daily Count";
@@ -417,16 +419,14 @@ namespace ConsumerLoanDB
             sc.Send(msg);
         }
 
-        private static SmtpClient GetSmtp()
-        {
-            int port = 587;
-            string server = "smtp.office365.com";
+        private static SmtpClient GetSmtp(SmtpSetting settings)
+        {  
             SmtpClient sc = new SmtpClient();
-            sc.Host = server;
-            sc.Port = port;
+            sc.Host = settings.ServerName;
+            sc.Port = Convert.ToInt32(settings.Port);
             sc.EnableSsl = true;
             sc.UseDefaultCredentials = false;
-            sc.Credentials = new NetworkCredential("smtp@dfcu.com", "Its@M3taph0r!", "office365.com");
+            sc.Credentials = new NetworkCredential(settings.Domain, settings.Password, settings.Office);
 
             return sc;
         }
@@ -435,14 +435,14 @@ namespace ConsumerLoanDB
         {
             try
             {
-                SmtpClient sc = GetSmtp();
-
+                CuUtilitiesContext cu = new CuUtilitiesContext();
+                var settings = cu.SmtpSettings.FirstOrDefault(s => s.EmailAddress == "dfcusmtp");
+                SmtpClient sc = GetSmtp(settings);
                 MailMessage msg = new MailMessage();
-                msg.From = new MailAddress("noreply@dfcu.com");
+                msg.From = new MailAddress(settings.Domain);
                 msg.To.Add(new MailAddress(email));
                 msg.Subject = "Consumer Loan Failed";
                 msg.IsBodyHtml = true;
-
                 msg.Body = message;
                 sc.Send(msg);
             }
