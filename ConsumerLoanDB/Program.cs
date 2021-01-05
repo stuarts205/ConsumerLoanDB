@@ -208,6 +208,15 @@ namespace ConsumerLoanDB
                 case "Eduardo Silva-Tumba":
                     name = "Eduardo Silva";
                     break;
+                case "Michael Oberg":
+                    name = "Mike Oberg";
+                    break;
+                case "Alexander Whisler":
+                    name = "Alex Whisler";
+                    break;
+                case "Nickolas Nielson":
+                    name = "Nick Nielson";
+                    break;
                 default:
                     name = originator;
                     break;
